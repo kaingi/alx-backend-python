@@ -21,23 +21,25 @@ from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient.public_repos."""
 
-    @classmethod
-    def setUpClass(cls):
-        """Patch requests.get to return fixtures based on URL."""
-        cls.get_patcher = patch('requests.get')
-        mock_get = cls.get_patcher.start()
+   @classmethod
+def setUpClass(cls):
+    """Patch requests.get to return fixtures based on URL."""
+    cls.get_patcher = patch('requests.get')
+    mock_get = cls.get_patcher.start()
 
-        def get_side_effect(url, *args, **kwargs):
-            mock_resp = Mock()
-            if url == cls.org_payload['repos_url']:
-                mock_resp.json.return_value = cls.repos_payload
-            elif url == f"https://api.github.com/orgs/{cls.org_payload['login']}":
-                mock_resp.json.return_value = cls.org_payload
-            else:
-                mock_resp.json.return_value = None
-            return mock_resp
+    org_url = f"https://api.github.com/orgs/{cls.org_payload['login']}"
 
-        mock_get.side_effect = get_side_effect
+    def get_side_effect(url, *args, **kwargs):
+        mock_resp = Mock()
+        if url == cls.org_payload['repos_url']:
+            mock_resp.json.return_value = cls.repos_payload
+        elif url == org_url:
+            mock_resp.json.return_value = cls.org_payload
+        else:
+            mock_resp.json.return_value = None
+        return mock_resp
+
+    mock_get.side_effect = get_side_effect
 
     @classmethod
     def tearDownClass(cls):
