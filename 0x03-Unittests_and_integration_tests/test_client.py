@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Unit tests for GithubOrgClient class in client.py.
+Unit tests for the GithubOrgClient class in client.py.
+
 Tests include:
-- org property using parameterized inputs and patching get_json
-- _public_repos_url property mocking
-- public_repos method with patching get_json and _public_repos_url
+- org property tested with parameterized inputs and patching get_json
+- _public_repos_url property tested by mocking org property
+- public_repos method tested by patching get_json and _public_repos_url
 """
+
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
@@ -38,8 +40,8 @@ class TestGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_url(self):
         """
-        Test that _public_repos_url property returns the expected repos_url
-        based on the mocked org property.
+        Test that _public_repos_url returns the repos_url
+        from the mocked org property.
         """
         org_payload = {"repos_url": "https://api.github.com/orgs/google/repos"}
 
@@ -57,9 +59,8 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
         """
-        Test public_repos method returns the list of repo names
+        Test public_repos method returns list of repo names
         using mocked _public_repos_url and get_json.
-        Also test that both mocks were called once.
         """
         repo_payload = [
             {"name": "repo1"},
