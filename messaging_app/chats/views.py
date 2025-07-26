@@ -35,17 +35,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.select_related('conversation', 'sender').all()
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['message_body']
+    serializer_class = MessageSerializer
 
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return MessageCreateSerializer
-        return MessageSerializer
+    def get_queryset(self):
+        conversation_id = self.kwargs.get('conversation_conversation_id')  # nested lookup
+        if conversation_id:
+            return Message.objects.filter(conversation__conversation_id=conversation_id)
+        return Message.objects.all()
 
     def create(self, request, *args, **kwargs):
         serializer = MessageCreateSerializer(data=request.data)
