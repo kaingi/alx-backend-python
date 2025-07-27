@@ -4,7 +4,8 @@ from .serializers import MessageSerializer, ConversationSerializer
 from .permissions import IsParticipantOfConversation
 mission_classes = [permissions.IsAuthenticated, IsOwner]
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.status import HTTP_403_FORBIDDEN
+from rest_framework.response import Response
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -35,18 +36,17 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
-    def get_queryset(self):
-        conversation_id = self.kwargs.get('conversation_conversation_id')  # nested lookup
-        if conversation_id:
-            return Message.objects.filter(conversation__conversation_id=conversation_id)
-        return Message.objects.all()
+    qpermission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
+    ...
 
     def create(self, request, *args, **kwargs):
-        serializer = MessageCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            message = serializer.save()
-            return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        conversation_id = request.data.get('conversation')
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({'detail': 'Conversation not found.'}, status=HTTP_404_NOT_FOUND)
+
+        if request.user not in conversation.participants.all():
+            return Response({'detail': 'You are not a participant of this conversation.'}, status=HTTP_403_FORBIDDEN)
+
+        return super().create(request, *args, **kwargs)
