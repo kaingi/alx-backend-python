@@ -4,25 +4,19 @@ import logging
 from datetime import datetime
 from django.http import HttpResponseForbidden
 
-class RestrictAccessByTimeMiddleware:
+class OffensiveLanguageMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
+        self.offensive_words = ['badword1', 'badword2', 'badword3']  # Replace with actual offensive words
 
     def __call__(self, request):
-        # Define allowed time range: 6 PM to 9 PM
-        start_time = time(18, 0)  # 6:00 PM
-        end_time = time(21, 0)    # 9:00 PM
-
-        current_time = datetime.now().time()
-
-        # Apply restriction only on /chats/ or similar chat endpoints
-        if request.path.startswith('/chats/'):
-            if current_time < start_time or current_time > end_time:
-                return HttpResponseForbidden("Access to chat is restricted outside 6PM to 9PM.")
+        if request.method == 'POST':
+            message = request.POST.get('message', '').lower()
+            if any(word in message for word in self.offensive_words):
+                return HttpResponseForbidden("Your message contains inappropriate language.")
 
         return self.get_response(request)
-    
-    
+
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
