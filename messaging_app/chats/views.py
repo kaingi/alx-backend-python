@@ -6,6 +6,8 @@ mission_classes = [permissions.IsAuthenticated, IsOwner]
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_403_FORBIDDEN
 from rest_framework.response import Response
+from .pagination import MessagePagination
+from .filters import MessageFilter
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -36,9 +38,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 class MessageViewSet(viewsets.ModelViewSet):
-    qpermission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
-    ...
-
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
+    pagination_class = MessagePagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = MessageFilter
+    ordering_fields = ['timestamp']
+    ordering = ['-timestamp'] 
     def create(self, request, *args, **kwargs):
         conversation_id = request.data.get('conversation')
         try:
