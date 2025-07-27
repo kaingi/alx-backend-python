@@ -4,16 +4,14 @@ import logging
 from datetime import datetime
 from django.http import HttpResponseForbidden
 
-class RolePermissionMiddleware:
+class RolepermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         user = getattr(request, "user", None)
 
-        # Only restrict if the user is authenticated
         if user and user.is_authenticated:
-            # Check if user is NOT admin or moderator
             if not (user.is_superuser or getattr(user, "role", None) in ["admin", "moderator"]):
                 return JsonResponse({"error": "Forbidden: Insufficient permissions"}, status=403)
 
