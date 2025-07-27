@@ -1,11 +1,8 @@
-from rest_framework import viewsets, status, filters
-from rest_framework.response import Response
-from .models import Conversation, Message, User
-from .serializers import (
-    ConversationSerializer,
-    MessageSerializer,
-    MessageCreateSerializer
-)
+from rest_framework import permissions, viewsets
+from .models import Message, Conversation
+from .serializers import MessageSerializer, ConversationSerializer
+from .permissions import IsOwner  # <-- your custom permission
+mission_classes = [permissions.IsAuthenticated, IsOwner]
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -13,6 +10,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['participants__username']
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def create(self, request, *args, **kwargs):
         participant_ids = request.data.get('participant_ids', [])
@@ -36,8 +34,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
     serializer_class = MessageSerializer
-
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_conversation_id')  # nested lookup
         if conversation_id:
