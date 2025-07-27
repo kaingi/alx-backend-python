@@ -8,6 +8,7 @@ from rest_framework.status import HTTP_403_FORBIDDEN
 from rest_framework.response import Response
 from .pagination import MessagePagination
 from .filters import MessageFilter
+pagination_class = MessagePagination
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
