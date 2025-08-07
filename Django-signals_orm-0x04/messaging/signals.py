@@ -1,5 +1,6 @@
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 from .models import Message, MessageHistory
 
 @receiver(pre_save, sender=Message)
@@ -16,3 +17,9 @@ def log_message_edit(sender, instance, **kwargs):
                 instance.edited = True  # Mark message as edited
         except Message.DoesNotExist:
             pass  # In case of race condition
+
+@receiver(post_delete, sender=User)
+def delete_user_related_data(sender, instance, **kwargs):
+    Message.objects.filter(user=instance).delete()
+    Notification.objects.filter(user=instance).delete()
+    MessageHistory.objects.filter(message__user=instance).delete()
