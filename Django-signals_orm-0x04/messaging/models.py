@@ -1,15 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    edited = models.BooleanField(default=False)  # ✅ Track if message was edited
+    edited = models.BooleanField(default=False)
+    edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_messages')  # <-- Add this line
 
     def __str__(self):
-        return f"{self.sender}: {self.content[:20]}"
-
+        return f"{self.sender.username}: {self.content[:20]}"
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='history')
     old_content = models.TextField()
