@@ -2,7 +2,13 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from .models import Message
+from django.views.decorators.cache import cache_page
 
+@cache_page(60)  # cache timeout in seconds
+def messages_list(request):
+    # Your normal view logic
+    messages = Message.objects.all().select_related('sender', 'receiver')
+    return render(request, 'messages/list.html', {'messages': messages})
 @login_required
 def delete_user(request):
     user = request.user
