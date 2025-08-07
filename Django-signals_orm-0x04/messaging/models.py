@@ -13,6 +13,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)
     edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_messages')  # <-- Add this line
+    read = models.BooleanField(default=False)
 
 
      # Attach the custom manager
