@@ -9,6 +9,14 @@ class Message(models.Model):
     edited = models.BooleanField(default=False)
     edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_messages')  # <-- Add this line
 
+    parent_message = models.ForeignKey(
+        'self', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='replies'
+    )
+
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}"
 class MessageHistory(models.Model):

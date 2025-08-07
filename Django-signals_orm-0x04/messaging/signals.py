@@ -23,3 +23,16 @@ def delete_user_related_data(sender, instance, **kwargs):
     Message.objects.filter(user=instance).delete()
     Notification.objects.filter(user=instance).delete()
     MessageHistory.objects.filter(message__user=instance).delete()
+    Message.objects.filter(sender=instance).delete()
+
+
+@receiver(pre_save, sender=Message)
+def track_message_edits(sender, instance, **kwargs):
+    if instance.pk:
+        original = Message.objects.get(pk=instance.pk)
+        if original.content != instance.content:
+            MessageHistory.objects.create(
+                message=instance,
+                old_content=original.content,
+                edited_by=instance.edited_by
+            )
