@@ -9,6 +9,11 @@ def delete_user(request):
     user.delete()
     return redirect('login')  # Or any other page after deletion
 
+def unread_inbox(request):
+    user = request.user
+    unread_messages = Message.unread.unread_for_user(user).select_related('sender')
+    return render(request, 'messaging/unread_inbox.html', {'messages': unread_messages})
+
 def get_replies(message):
     # Use select_related to get sender and receiver efficiently on replies
     replies = message.replies.select_related('sender', 'receiver').all()
